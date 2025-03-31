@@ -122,6 +122,7 @@ jobs:
     with:
       DISTR: ${{ matrix.DISTR }}
       arch: ${{ matrix.arch }}
+      build_tag: ${{ needs.pack.outputs.target == 'dev' && 'dev' || '' }}
       cmake_command: |
         cat src/sphinxversion.h.in
         mkdir build

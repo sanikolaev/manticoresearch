@@ -31,6 +31,10 @@ on:
         required: false
         type: string
         default: ""
+      build_tag:
+        required: false
+        type: string
+        default: ""
       cmake_command:
         required: false
         type: string
@@ -93,6 +97,7 @@ jobs:
         HOMEBREW_PREFIX: ${{ inputs.HOMEBREW_PREFIX }}
         PACK_GALERA: ${{ inputs.PACK_GALERA }}
         COLUMNAR_LOCATOR: ${{ inputs.COLUMNAR_LOCATOR }}
+        BUILD_TAG: ${{ inputs.build_tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
