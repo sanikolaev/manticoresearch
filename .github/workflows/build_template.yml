@@ -104,6 +104,7 @@ jobs:
         if: inputs.version != ''
         run: |
           sed -i "s/x\.x\.x/${{ inputs.version }}/g" src/sphinxversion.h.in
+          cat src/sphinxversion.h.in
 
       - name: Initialization
         run: | # without adding the safe.directory cmake fails to do git log -1 --date=short --format=%cd
