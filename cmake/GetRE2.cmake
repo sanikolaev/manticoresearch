@@ -49,7 +49,7 @@ function(PATCH_GIT RESULT RE2_SRC)
 	message(STATUS "Patch content:\n${PATCH_CONTENT}")
 
 	execute_process(
-		COMMAND "${GIT_EXECUTABLE}" apply libre2.patch
+		COMMAND "${GIT_EXECUTABLE}" apply --verbose libre2.patch
 		WORKING_DIRECTORY "${RE2_SRC}"
 		RESULT_VARIABLE PATCH_RESULT
 		OUTPUT_VARIABLE PATCH_STDOUT
