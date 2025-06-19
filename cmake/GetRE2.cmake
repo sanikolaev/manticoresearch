@@ -71,7 +71,7 @@ function ( PATCH_PATCH RESULT RE2_SRC )
 	endif ()
 
 	execute_process(
-		COMMAND "${PATCH_PROG}" -p1 --binary -i libre2.patch
+		COMMAND "${PATCH_PROG}" --verbose -p1 --binary -i libre2.patch
 		WORKING_DIRECTORY "${RE2_SRC}"
 		RESULT_VARIABLE PATCH_RESULT
 		OUTPUT_VARIABLE PATCH_STDOUT
