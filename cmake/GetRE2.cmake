@@ -48,6 +48,9 @@ function(PATCH_GIT RESULT RE2_SRC)
 	file(READ "${PATCH_FILE}" PATCH_CONTENT)
 	message(STATUS "Patch content:\n${PATCH_CONTENT}")
 
+	file(READ "re2/compile.cc" FILE_CONTENT)
+	message(STATUS "compile.cc:\n${FILE_CONTENT}")
+
 	execute_process(
 		COMMAND "${GIT_EXECUTABLE}" apply --verbose libre2.patch
 		WORKING_DIRECTORY "${RE2_SRC}"
