@@ -38,37 +38,75 @@ return_if_target_found ( re2::re2 "found ready (no need to build)" )
 function ( PATCH_GIT RESULT RE2_SRC )
 	find_package ( Git QUIET )
 	if (NOT GIT_EXECUTABLE)
+		message(STATUS "Git not found. Skipping patch_git.")
+		set(${RESULT} FALSE PARENT_SCOPE)
 		return ()
 	endif ()
-	execute_process ( COMMAND "${GIT_EXECUTABLE}" apply libre2.patch WORKING_DIRECTORY "${RE2_SRC}" )
-	set ( ${RESULT} TRUE PARENT_SCOPE )
+
+	execute_process(
+		COMMAND "${GIT_EXECUTABLE}" apply libre2.patch
+		WORKING_DIRECTORY "${RE2_SRC}"
+		RESULT_VARIABLE PATCH_RESULT
+		OUTPUT_VARIABLE PATCH_STDOUT
+		ERROR_VARIABLE PATCH_STDERR
+	)
+
+	if (PATCH_RESULT EQUAL 0)
+		message(STATUS "Patch applied successfully with Git.")
+		set(${RESULT} TRUE PARENT_SCOPE)
+	else ()
+		message(WARNING "Git patch failed with error code: ${PATCH_RESULT}")
+		message(WARNING "Git patch stderr: ${PATCH_STDERR}")
+		message(WARNING "Git patch stdout: ${PATCH_STDOUT}")
+		set(${RESULT} FALSE PARENT_SCOPE)
+	endif ()
 endfunction ()
 
 function ( PATCH_PATCH RESULT RE2_SRC )
 	find_program ( PATCH_PROG patch )
 	if (NOT PATCH_PROG)
+		message(STATUS "System patch tool not found. Skipping patch_patch.")
+		set(${RESULT} FALSE PARENT_SCOPE)
 		return ()
 	endif ()
-	execute_process ( COMMAND "${PATCH_PROG}" -p1 --binary -i libre2.patch WORKING_DIRECTORY "${RE2_SRC}" )
-	set ( ${RESULT} TRUE PARENT_SCOPE )
+
+	execute_process(
+		COMMAND "${PATCH_PROG}" -p1 --binary -i libre2.patch
+		WORKING_DIRECTORY "${RE2_SRC}"
+		RESULT_VARIABLE PATCH_RESULT
+		OUTPUT_VARIABLE PATCH_STDOUT
+		ERROR_VARIABLE PATCH_STDERR
+	)
+
+	if (PATCH_RESULT EQUAL 0)
+		message(STATUS "Patch applied successfully with system patch.")
+		set(${RESULT} TRUE PARENT_SCOPE)
+	else ()
+		message(WARNING "System patch failed with error code: ${PATCH_RESULT}")
+		message(WARNING "System patch stderr: ${PATCH_STDERR}")
+		message(WARNING "System patch stdout: ${PATCH_STDOUT}")
+		message(WARNING "Tip: This may happen if RE2 version does not match the patch.")
+		set(${RESULT} FALSE PARENT_SCOPE)
+	endif ()
 endfunction ()
 
 # cb to finalize RE2 sources (patch, add cmake)
 function ( PREPARE_RE2 RE2_SRC )
-	# check if it is already patched before
 	if (EXISTS "${RE2_SRC}/is_patched.txt")
+		message(STATUS "RE2 already patched. Skipping.")
 		return ()
 	endif ()
 
+	message(STATUS "Copying patch to RE2 source dir...")
 	file ( COPY "${MANTICORE_SOURCE_DIR}/libre2/libre2.patch" DESTINATION "${RE2_SRC}" )
-	patch_git ( PATCHED ${RE2_SRC} )
+
+	patch_git(PATCHED ${RE2_SRC})
 	if (NOT PATCHED)
-		patch_patch ( PATCHED ${RE2_SRC} )
+		patch_patch(PATCHED ${RE2_SRC})
 	endif ()
 
 	if (NOT PATCHED)
-		message ( FATAL_ERROR "Couldn't patch RE2 distro. No Git or Patch found" )
-		return ()
+		message(FATAL_ERROR "Couldn't patch RE2 distro. Patch failed with both Git and system 'patch'. Please verify that the patch matches the RE2 version (${RE2_BRANCH}) and that the source files are unmodified.")
 	endif ()
 
 	file ( WRITE "${RE2_SRC}/is_patched.txt" "ok" )
