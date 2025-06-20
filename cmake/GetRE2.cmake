@@ -13,6 +13,7 @@
 # If not found, it looks in ${LIBS_BUNDLE} for re2-${RE2_BRANCH}.zip,
 # and finally tries to download it from GitHub.
 
+
 set(RE2_REPO "https://github.com/manticoresoftware/re2")
 set(RE2_BRANCH "2015-06-01") # specific tag for reproducible builds
 set(RE2_SRC_MD5 "023053ef20051a0fc5911a76869be59f")
