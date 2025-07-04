@@ -16,7 +16,7 @@ on:
       - 'galera_packaging/**'
   push:
     branches:
-      - manticore-*
+      - master
     paths-ignore:
       - 'manual/**'
       - 'cmake/GetGALERA.cmake'
@@ -118,7 +118,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Update version
         id: semver-tagger
-        uses: manticoresoftware/semver-tagger-action@main  
+        uses: sanikolaev/semver-tagger-action@main  
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           conventional_commits_authors: alexey@manticoresearch.com
