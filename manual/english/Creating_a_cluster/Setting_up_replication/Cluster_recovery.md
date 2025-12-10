@@ -4,7 +4,7 @@ In the event that the Manticore search daemon stops with no remaining nodes in t
 
 However, this also poses challenges. Let's examine several scenarios, using a cluster of nodes A, B, and C, to see what needs to be done when some or all nodes become unavailable.
 
-### Case N
+### Case N1
 
  When node A is stopped, the other nodes receive a "normal shutdown" message. The cluster size is reduced, and a quorum re-calculation takes place.
 
