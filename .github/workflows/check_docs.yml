@@ -51,14 +51,21 @@ jobs:
             else
               skip_translate="false"
             fi
+            if [ -f ./skip_translate_reason.txt ]; then
+              skip_translate_reason=$(tr -d '\r\n' < ./skip_translate_reason.txt)
+            else
+              skip_translate_reason="not_provided"
+            fi
           else
             repo="${{ github.repository }}"
             ref="${{ github.head_ref }}"
             skip_translate="false"
+            skip_translate_reason="workflow_call"
           fi
           echo "repo=$repo" >> $GITHUB_OUTPUT
           echo "ref=$ref" >> $GITHUB_OUTPUT
           echo "skip_translate=${skip_translate:-false}" >> $GITHUB_OUTPUT
+          echo "skip_translate_reason=${skip_translate_reason:-unknown}" >> $GITHUB_OUTPUT
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -74,6 +81,20 @@ jobs:
           php-version: '8.2'
           tools: composer
           extensions: curl
+
+      - name: Show translate mode
+        run: |
+          if [ "${{ steps.repo-check.outputs.skip_translate }}" == "true" ]; then
+            echo "Auto-translate: SKIPPED (${{ steps.repo-check.outputs.skip_translate_reason }})"
+            echo "### Auto-translate: skipped" >> $GITHUB_STEP_SUMMARY
+            echo "- Reason: ${{ steps.repo-check.outputs.skip_translate_reason }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Auto-translate: ENABLED"
+            echo "### Auto-translate: enabled" >> $GITHUB_STEP_SUMMARY
+            echo "- Reason: ${{ steps.repo-check.outputs.skip_translate_reason }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- Repository: ${{ steps.repo-check.outputs.repo }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Ref: ${{ steps.repo-check.outputs.ref }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Explain skipped auto-translate
         if: steps.repo-check.outputs.skip_translate == 'true'

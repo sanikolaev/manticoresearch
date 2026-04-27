@@ -27,11 +27,33 @@ jobs:
         run: |
           echo $PR_REPO > pr_repo.txt
           echo $PR_REF >> pr_repo.txt
-          if [[ "$PR_IS_DRAFT" == "true" || "$PR_HAS_DRAFT_LABEL" == "true" ]]; then
-            echo "true" > skip_translate.txt
-          else
-            echo "false" > skip_translate.txt
+          skip_translate=false
+          reason=ready
+          if [[ "$PR_IS_DRAFT" == "true" ]]; then
+            skip_translate=true
+            reason=draft_pr
+          elif [[ "$PR_HAS_DRAFT_LABEL" == "true" ]]; then
+            skip_translate=true
+            reason=draft_label
           fi
+          echo "$skip_translate" > skip_translate.txt
+          echo "$reason" > skip_translate_reason.txt
+
+      - name: Show translate mode
+        run: |
+          skip_translate=$(tr -d '\r\n' < skip_translate.txt)
+          reason=$(tr -d '\r\n' < skip_translate_reason.txt)
+          if [[ "$skip_translate" == "true" ]]; then
+            echo "Auto-translate: SKIPPED ($reason)"
+            echo "### Auto-translate: skipped" >> $GITHUB_STEP_SUMMARY
+            echo "- Reason: $reason" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Auto-translate: ENABLED"
+            echo "### Auto-translate: enabled" >> $GITHUB_STEP_SUMMARY
+            echo "- Reason: $reason" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- PR repo: $PR_REPO" >> $GITHUB_STEP_SUMMARY
+          echo "- PR ref: $PR_REF" >> $GITHUB_STEP_SUMMARY
       - name: Upload PR repo name
         uses: actions/upload-artifact@v4
         with:
@@ -41,7 +63,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: skip_translate
-          path: ./skip_translate.txt
+          path: |
+            ./skip_translate.txt
+            ./skip_translate_reason.txt
       - name: Trigger doc check
         run: |
           echo "Doc check triggered"
