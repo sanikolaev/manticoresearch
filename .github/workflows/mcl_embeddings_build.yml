@@ -51,11 +51,23 @@ jobs:
             echo "Expected MCL submodule SHA ${{ inputs.mcl_full_sha }}, got $actual_sha" >&2
             exit 1
           fi
+          source_remote="$(git -C daemon-src/mcl remote get-url origin)"
+          git config --global --add safe.directory "$PWD"
           git clone --no-local daemon-src/mcl mcl-src
           shopt -s dotglob nullglob
           mv mcl-src/* .
           rmdir mcl-src
-          git fetch --tags --force --prune || true
+          case "$source_remote" in
+            git@github.com:*)
+              source_remote="https://github.com/${source_remote#git@github.com:}"
+              ;;
+            ssh://git@github.com/*)
+              source_remote="https://github.com/${source_remote#ssh://git@github.com/}"
+              ;;
+          esac
+          git remote set-url origin "$source_remote"
+          git fetch --force --prune origin '+refs/heads/*:refs/remotes/origin/*' || true
+          git fetch --tags --force --prune origin || true
           git config --global --add safe.directory "$PWD"
 
       - name: Setup Rust toolchain
@@ -102,10 +114,23 @@ jobs:
       - name: Check code formatting
         run: cargo fmt --check --manifest-path ./embeddings/Cargo.toml
 
+      - name: Download ONNX Runtime for unit tests
+        run: |
+          set -euo pipefail
+          ort_version="1.24.2"
+          ort_name="onnxruntime-linux-x64-static_lib-${ort_version}-glibc2_17"
+          curl --fail --show-error --location             --retry 5 --retry-all-errors --retry-delay 2             "https://github.com/csukuangfj/onnxruntime-libs/releases/download/v${ort_version}/${ort_name}.zip"             -o /tmp/ort-unit-tests.zip
+          rm -rf /tmp/ort-unit-tests
+          unzip -q /tmp/ort-unit-tests.zip -d /tmp/ort-unit-tests
+          echo "ORT_LIB_PATH=/tmp/ort-unit-tests/${ort_name}/lib" >> "$GITHUB_ENV"
+          echo "ORT_STRATEGY=system" >> "$GITHUB_ENV"
+
       - name: Run unit tests
         run: cargo test --lib --verbose --manifest-path ./embeddings/Cargo.toml
         env:
           RUST_BACKTRACE: 1
+          ORT_LIB_PATH: ${{ env.ORT_LIB_PATH }}
+          ORT_STRATEGY: ${{ env.ORT_STRATEGY }}
 
       - name: Run OpenAI integration tests (if API key available)
         run: |
@@ -219,11 +244,23 @@ jobs:
             echo "Expected MCL submodule SHA ${{ inputs.mcl_full_sha }}, got $actual_sha" >&2
             exit 1
           fi
+          source_remote="$(git -C daemon-src/mcl remote get-url origin)"
+          git config --global --add safe.directory "$PWD"
           git clone --no-local daemon-src/mcl mcl-src
           shopt -s dotglob nullglob
           mv mcl-src/* .
           rmdir mcl-src
-          git fetch --tags --force --prune || true
+          case "$source_remote" in
+            git@github.com:*)
+              source_remote="https://github.com/${source_remote#git@github.com:}"
+              ;;
+            ssh://git@github.com/*)
+              source_remote="https://github.com/${source_remote#ssh://git@github.com/}"
+              ;;
+          esac
+          git remote set-url origin "$source_remote"
+          git fetch --force --prune origin '+refs/heads/*:refs/remotes/origin/*' || true
+          git fetch --tags --force --prune origin || true
           git config --global --add safe.directory "$PWD"
 
       - name: Setup Rust toolchain
