@@ -210,16 +210,21 @@ jobs:
                   source = True
           output = os.environ["GITHUB_OUTPUT"]
           with open(output, "a", encoding="utf-8") as fh:
-              mcl = any(path == "mcl" or path.startswith("mcl/") or path == ".gitmodules" for path in files)
+              mcl_from_files = any(path == "mcl" or path.startswith("mcl/") or path == ".gitmodules" for path in files)
               fh.write(f"source={'true' if source else 'false'}\n")
               fh.write(f"test={'true' if test else 'false'}\n")
               fh.write(f"clt={'true' if clt else 'false'}\n")
-              fh.write(f"mcl={'true' if mcl else 'false'}\n")
+              fh.write(f"mcl_from_files={'true' if mcl_from_files else 'false'}\n")
           PY
+          mcl_needed=false
+          if grep -Eq '^(mcl(/|$)|\.gitmodules$)' "$files_list_path"; then
+            mcl_needed=true
+          fi
           if [[ "${{ steps.mcl_sha.outputs.mcl_sha }}" != "" ]] \
             && ! python3 dist/resolve_repo_package.py --repo-type dev --distr jammy --arch amd64 --sha "${{ steps.mcl_sha.outputs.mcl_sha }}" --extensions .deb >/dev/null 2>&1; then
-            echo "mcl=true" >> "$GITHUB_OUTPUT"
+            mcl_needed=true
           fi
+          echo "mcl=$mcl_needed" >> "$GITHUB_OUTPUT"
       - name: Check related PRs for branch
         id: related_prs
         run: |
