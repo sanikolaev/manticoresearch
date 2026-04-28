@@ -460,22 +460,24 @@ jobs:
           path: .mcl-package-cache
 
   mcl_embeddings_jammy_x86_64:
+    if: needs.mcl_test_package_cache_probe.outputs.cache_hit != 'true'
     name: MCL embeddings jammy x86_64
     needs: [meta, mcl_test_package_cache_probe]
     uses: ./.github/workflows/mcl_embeddings_quick_build.yml
     with:
-      enabled: ${{ needs.mcl_test_package_cache_probe.outputs.cache_hit != 'true' }}
+      enabled: true
       mcl_full_sha: ${{ needs.meta.outputs.mcl_full_sha }}
       source_ref: ${{ github.sha }}
       distr: linux
       arch: x86_64
 
   mcl_package_jammy:
+    if: needs.mcl_test_package_cache_probe.outputs.cache_hit != 'true'
     name: MCL jammy package
     needs: [meta, mcl_embeddings_jammy_x86_64, mcl_test_package_cache_probe]
     uses: ./.github/workflows/mcl_package_build.yml
     with:
-      enabled: ${{ needs.mcl_test_package_cache_probe.outputs.cache_hit != 'true' }}
+      enabled: true
       mcl_full_sha: ${{ needs.meta.outputs.mcl_full_sha }}
       source_ref: ${{ github.sha }}
       artifact_name: mcl_package_jammy_x86_64
