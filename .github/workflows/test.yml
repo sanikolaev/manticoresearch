@@ -217,8 +217,7 @@ jobs:
               fh.write(f"mcl={'true' if mcl else 'false'}\n")
           PY
           if [[ "${{ steps.mcl_sha.outputs.mcl_sha }}" != "" ]] \
-            && ! python3 dist/resolve_repo_package.py --repo-type dev --distr jammy --arch amd64 --sha "${{ steps.mcl_sha.outputs.mcl_sha }}" --extensions .deb >/dev/null 2>&1 \
-            && [[ "${{ steps.mcl_test_pkg_cache_meta.outputs.cache_hit }}" != "true" ]]; then
+            && ! python3 dist/resolve_repo_package.py --repo-type dev --distr jammy --arch amd64 --sha "${{ steps.mcl_sha.outputs.mcl_sha }}" --extensions .deb >/dev/null 2>&1; then
             echo "mcl=true" >> "$GITHUB_OUTPUT"
           fi
       - name: Check related PRs for branch
