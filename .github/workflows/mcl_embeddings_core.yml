@@ -183,7 +183,7 @@ jobs:
           echo "- Jina: $([ -n "${{ secrets.JINA_API_KEY }}" ] && echo "Integration tested" || echo "Skipped (no API key)")"
 
   build:
-    if: ${{ inputs.enabled && (needs.quality-check.result == 'success' || needs.quality-check.result == 'skipped') }}
+    if: ${{ always() && inputs.enabled && (needs.quality-check.result == 'success' || needs.quality-check.result == 'skipped') }}
     needs: [quality-check]  # Run after quality checks when enabled, otherwise continue after skipped job
     runs-on: ${{ 
       (inputs.distr == 'linux' && inputs.arch == 'aarch64' && 'ubuntu-24.04-arm') ||
