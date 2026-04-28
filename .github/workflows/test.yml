@@ -464,7 +464,7 @@ jobs:
     needs: [meta, mcl_test_package_cache_probe]
     uses: ./.github/workflows/mcl_embeddings_quick_build.yml
     with:
-      enabled: ${{ needs.meta.outputs.mcl_changed == 'true' && needs.mcl_test_package_cache_probe.outputs.cache_hit != 'true' }}
+      enabled: ${{ needs.mcl_test_package_cache_probe.outputs.cache_hit != 'true' }}
       mcl_full_sha: ${{ needs.meta.outputs.mcl_full_sha }}
       source_ref: ${{ github.sha }}
       distr: linux
@@ -475,7 +475,7 @@ jobs:
     needs: [meta, mcl_embeddings_jammy_x86_64, mcl_test_package_cache_probe]
     uses: ./.github/workflows/mcl_package_build.yml
     with:
-      enabled: ${{ needs.meta.outputs.mcl_changed == 'true' && needs.mcl_test_package_cache_probe.outputs.cache_hit != 'true' }}
+      enabled: ${{ needs.mcl_test_package_cache_probe.outputs.cache_hit != 'true' }}
       mcl_full_sha: ${{ needs.meta.outputs.mcl_full_sha }}
       source_ref: ${{ github.sha }}
       artifact_name: mcl_package_jammy_x86_64
@@ -499,7 +499,7 @@ jobs:
       timeout: 15
       MCL_PACKAGE_ARTIFACT_NAME: ${{ needs.mcl_package_jammy.result == 'success' && 'mcl_package_jammy_x86_64' || '' }}
       MCL_PACKAGE_CACHE_KEY: ${{ needs.mcl_test_package_cache_probe.outputs.cache_key }}
-      MCL_PACKAGE_SHA: ${{ needs.meta.outputs.mcl_changed != 'true' && needs.meta.outputs.mcl_sha || '' }}
+      MCL_PACKAGE_SHA: ${{ needs.meta.outputs.mcl_sha }}
       MCL_REPO_TYPE: dev
       FLOAT_TOLERANCE: true
       CTEST_EXCLUDE_REGEX: "rt_298|rt_306|rt_481"
@@ -573,7 +573,7 @@ jobs:
           name: release_build
           path: .
       - name: Restore exact-SHA MCL package cache
-        if: ${{ needs.meta.outputs.mcl_changed == 'true' && needs.mcl_test_package_cache_probe.outputs.cache_hit == 'true' }}
+        if: ${{ needs.mcl_test_package_cache_probe.outputs.cache_hit == 'true' }}
         uses: actions/cache@v4
         with:
           path: ./.mcl-package-cache
