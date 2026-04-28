@@ -39,7 +39,7 @@ jobs:
       branch_name: ${{ steps.branch_info.outputs.branch_name }}
       mcl_sha: ${{ steps.mcl_sha.outputs.mcl_sha }}
       mcl_full_sha: ${{ steps.mcl_sha.outputs.mcl_full_sha }}
-      mcl_changed: ${{ steps.detect.outputs.mcl }}
+      mcl_changed: ${{ steps.mcl_detect.outputs.mcl }}
       mcl_test_pkg_cache_key: ${{ steps.mcl_test_pkg_cache_meta.outputs.cache_key }}
       mcl_test_pkg_cached: ${{ steps.mcl_test_pkg_cache_meta.outputs.cache_hit }}
       branch_tag: ${{ steps.sanitize_branch.outputs.branch_tag }}
@@ -210,21 +210,46 @@ jobs:
                   source = True
           output = os.environ["GITHUB_OUTPUT"]
           with open(output, "a", encoding="utf-8") as fh:
-              mcl_from_files = any(path == "mcl" or path.startswith("mcl/") or path == ".gitmodules" for path in files)
               fh.write(f"source={'true' if source else 'false'}\n")
               fh.write(f"test={'true' if test else 'false'}\n")
               fh.write(f"clt={'true' if clt else 'false'}\n")
-              fh.write(f"mcl_from_files={'true' if mcl_from_files else 'false'}\n")
           PY
+      - name: Finalize MCL detection
+        id: mcl_detect
+        shell: bash
+        run: |
+          set -euo pipefail
           mcl_needed=false
-          if grep -Eq '^(mcl(/|$)|\.gitmodules$)' "$files_list_path"; then
+          base=""
+          head="${{ github.sha }}"
+          if [[ -n "${{ steps.image_check.outputs.image_commit }}" ]]; then
+            base="${{ steps.image_check.outputs.image_commit }}"
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            head="${{ github.event.pull_request.head.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+
+          files=""
+          if [[ -z "$base" || "$base" == "0000000000000000000000000000000000000000" ]]; then
+            files=$(git ls-tree -r --name-only "$head")
+          else
+            if ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+              git fetch --no-tags --depth=1 origin "$base"
+            fi
+            files=$(git diff --name-only "$base" "$head")
+          fi
+
+          if printf '%s
+' "$files" | grep -Eq '^(mcl(/|$)|\.gitmodules$)'; then
             mcl_needed=true
           fi
-          if [[ "${{ steps.mcl_sha.outputs.mcl_sha }}" != "" ]] \
-            && ! python3 dist/resolve_repo_package.py --repo-type dev --distr jammy --arch amd64 --sha "${{ steps.mcl_sha.outputs.mcl_sha }}" --extensions .deb >/dev/null 2>&1; then
+          if [[ "${{ steps.mcl_sha.outputs.mcl_sha }}" != "" ]]             && ! python3 dist/resolve_repo_package.py --repo-type dev --distr jammy --arch amd64 --sha "${{ steps.mcl_sha.outputs.mcl_sha }}" --extensions .deb >/dev/null 2>&1; then
             mcl_needed=true
           fi
           echo "mcl=$mcl_needed" >> "$GITHUB_OUTPUT"
+
       - name: Check related PRs for branch
         id: related_prs
         run: |
