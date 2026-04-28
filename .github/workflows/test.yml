@@ -241,8 +241,7 @@ jobs:
             files=$(git diff --name-only "$base" "$head")
           fi
 
-          if printf '%s
-' "$files" | grep -Eq '^(mcl(/|$)|\.gitmodules$)'; then
+          if printf '%s\n' "$files" | grep -Eq '^(mcl(/|$)|\.gitmodules$)'; then
             mcl_needed=true
           fi
           if [[ "${{ steps.mcl_sha.outputs.mcl_sha }}" != "" ]]             && ! python3 dist/resolve_repo_package.py --repo-type dev --distr jammy --arch amd64 --sha "${{ steps.mcl_sha.outputs.mcl_sha }}" --extensions .deb >/dev/null 2>&1; then
