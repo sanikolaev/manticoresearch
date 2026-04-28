@@ -1254,7 +1254,7 @@ bool SIContainer_c::Load ( const CSphString & sFile, CSphString & sError )
 	if ( !pIndex )
 		return false;
 
-	m_dIndexes.Add ( { std::unique_ptr<SI::Index_i>(pIndex) } );
+	m_dIndexes.Add ( { std::unique_ptr<SI::Index_i>(pIndex), sFile } );
 	return true;
 }
 
@@ -1262,7 +1262,7 @@ bool SIContainer_c::Load ( const CSphString & sFile, CSphString & sError )
 bool SIContainer_c::Drop ( const CSphString & sFile, CSphString & sError )
 {
 	ARRAY_FOREACH ( i, m_dIndexes )
-		if ( sFile==m_dIndexes[i].m_pIndex->GetFilename().c_str() )
+		if ( sFile==m_dIndexes[i].m_sFilename )
 		{
 			m_dIndexes.Remove(i);
 			return true;
@@ -1276,8 +1276,8 @@ bool SIContainer_c::Drop ( const CSphString & sFile, CSphString & sError )
 void SIContainer_c::UpdateFilename ( const CSphString & sOldFile, const CSphString & sNewFile )
 {
 	for ( auto & tIndex : m_dIndexes )
-		if ( sOldFile==tIndex.m_pIndex->GetFilename().c_str() )
-			tIndex.m_pIndex->UpdateFilename ( sNewFile.cstr() );
+		if ( sOldFile==tIndex.m_sFilename )
+			tIndex.m_sFilename = sNewFile;
 }
 
 

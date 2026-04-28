@@ -65,6 +65,7 @@ private:
 	struct IndexInfo_t
 	{
 		std::unique_ptr<SI::Index_i>	m_pIndex;
+		CSphString					m_sFilename;
 	};
 
 	CSphVector<IndexInfo_t> m_dIndexes;
