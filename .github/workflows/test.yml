@@ -487,7 +487,7 @@ jobs:
       arch: x86_64
 
   test_linux_release_mcl:
-    if: always() && (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'update-buddy-version') != true
+    if: always() && needs.build_linux_release.result == 'success' && (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'update-buddy-version') != true
     name: Linux release mode tests (MCL)
     needs: [build_linux_release, meta, mcl_package_jammy, mcl_test_package_cache_probe]
     permissions:
