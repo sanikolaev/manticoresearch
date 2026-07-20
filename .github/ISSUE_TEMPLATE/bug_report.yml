@@ -9,7 +9,7 @@ body:
 
         ## Before you submit
 
-        - **Existing Manticore Search clients:** please create the bug report in your private repository instead of the public issue tracker. Reports there are prioritized so we can start working on them right away.
+        - **Existing Manticore Search clients: please create the bug report in your private repository instead of the public issue tracker. Reports there are prioritized so we can start working on them right away.**
         - **Need this bug fixed soon?** Manticore Search provides support subscriptions. If timely resolution is important, please subscribe via [Manticore Search services](https://manticoresearch.com/services/).
         - Public GitHub issues are welcome, but they are triaged according to our public backlog and may not receive immediate attention.
 
